@@ -1,0 +1,3917 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>pipeline</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="pipeline_files/libs/clipboard/clipboard.min.js"></script>
+<script src="pipeline_files/libs/quarto-html/quarto.js"></script>
+<script src="pipeline_files/libs/quarto-html/popper.min.js"></script>
+<script src="pipeline_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="pipeline_files/libs/quarto-html/anchor.min.js"></script>
+<link href="pipeline_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="pipeline_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="pipeline_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="pipeline_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="pipeline_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<div id="cell-0" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, OneHotEncoder, PolynomialFeatures</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> ColumnTransformer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-1" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> LinearRegression()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ames <span class="op">=</span> pd.read_csv(<span class="st">"AmesHousing.csv"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames[[<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>]]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>X_train_s <span class="op">=</span> (X_train <span class="op">-</span> X_train.mean())<span class="op">/</span>X_train.std()</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr.fit(X_train_s, y_train)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>lr_fitted.coef_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([ 71349.4886345 , -18910.67649911])</code></pre>
+</div>
+</div>
+<div id="cell-2" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X_test_s <span class="op">=</span> (X_test <span class="op">-</span> X_train.mean())<span class="op">/</span>X_train.std()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y_preds <span class="op">=</span> lr_fitted.predict(X_test_s)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>r2_score(y_test, y_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.5133849776541741</code></pre>
+</div>
+</div>
+<div id="cell-3" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>new_house <span class="op">=</span> pd.DataFrame(data <span class="op">=</span> {<span class="st">"Gr Liv Area"</span>: [<span class="dv">889</span>], <span class="st">"TotRms AbvGrd"</span>: [<span class="dv">6</span>]})</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>new_house</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Gr Liv Area</th>
+<th data-quarto-table-cell-role="th">TotRms AbvGrd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>889</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>new_house_s <span class="op">=</span> (new_house <span class="op">-</span> X_train.mean())<span class="op">/</span>X_train.std()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lr_fitted.predict(new_house_s)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([98668.53118576])</code></pre>
+</div>
+</div>
+<p>Creating a Pipeline Objects</p>
+<div id="cell-6" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> LinearRegression()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  [StandardScaler(),lr]</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>lr_pipeline</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/IPython/core/formatters.py:977</span>, in <span class="ansi-cyan-fg">MimeBundleFormatter.__call__</span><span class="ansi-blue-fg">(self, obj, include, exclude)</span>
+
+<span class="ansi-green-fg ansi-bold">    974</span>     method <span style="color:rgb(98,98,98)">=</span> get_real_method(obj, <span style="color:rgb(0,135,0)">self</span><span style="color:rgb(98,98,98)">.</span>print_method)
+
+<span class="ansi-green-fg ansi-bold">    976</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> method <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>:
+
+<span class="ansi-green-fg">--&gt; 977</span>         <span style="font-weight:bold;color:rgb(0,135,0)">return</span> method(include<span style="color:rgb(98,98,98)">=</span>include, exclude<span style="color:rgb(98,98,98)">=</span>exclude)
+
+<span class="ansi-green-fg ansi-bold">    978</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+
+<span class="ansi-green-fg ansi-bold">    979</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+
+
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/sklearn/base.py:699</span>, in <span class="ansi-cyan-fg">BaseEstimator._repr_mimebundle_</span><span class="ansi-blue-fg">(self, **kwargs)</span>
+
+<span class="ansi-green-fg ansi-bold">    697</span> output <span style="color:rgb(98,98,98)">=</span> {<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">text/plain</span><span style="color:rgb(175,0,0)">"</span>: <span style="color:rgb(0,135,0)">repr</span>(<span style="color:rgb(0,135,0)">self</span>)}
+
+<span class="ansi-green-fg ansi-bold">    698</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> get_config()[<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">display</span><span style="color:rgb(175,0,0)">"</span>] <span style="color:rgb(98,98,98)">==</span> <span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">diagram</span><span style="color:rgb(175,0,0)">"</span>:
+
+<span class="ansi-green-fg">--&gt; 699</span>     output[<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">text/html</span><span style="color:rgb(175,0,0)">"</span>] <span style="color:rgb(98,98,98)">=</span> estimator_html_repr(<span style="color:rgb(0,135,0)">self</span>)
+
+<span class="ansi-green-fg ansi-bold">    700</span> <span style="font-weight:bold;color:rgb(0,135,0)">return</span> output
+
+
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/sklearn/utils/_estimator_html_repr.py:348</span>, in <span class="ansi-cyan-fg">estimator_html_repr</span><span class="ansi-blue-fg">(estimator)</span>
+
+<span class="ansi-green-fg ansi-bold">    346</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+
+<span class="ansi-green-fg ansi-bold">    347</span>     <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+
+<span class="ansi-green-fg">--&gt; 348</span>         check_is_fitted(estimator)
+
+<span class="ansi-green-fg ansi-bold">    349</span>         status_label <span style="color:rgb(98,98,98)">=</span> <span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">&lt;span&gt;Fitted&lt;/span&gt;</span><span style="color:rgb(175,0,0)">"</span>
+
+<span class="ansi-green-fg ansi-bold">    350</span>         is_fitted_css_class <span style="color:rgb(98,98,98)">=</span> <span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">fitted</span><span style="color:rgb(175,0,0)">"</span>
+
+
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/sklearn/utils/validation.py:1621</span>, in <span class="ansi-cyan-fg">check_is_fitted</span><span class="ansi-blue-fg">(estimator, attributes, msg, all_or_any)</span>
+
+<span class="ansi-green-fg ansi-bold">   1618</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="color:rgb(0,135,0)">hasattr</span>(estimator, <span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">fit</span><span style="color:rgb(175,0,0)">"</span>):
+
+<span class="ansi-green-fg ansi-bold">   1619</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> <span style="font-weight:bold;color:rgb(215,95,95)">TypeError</span>(<span style="color:rgb(175,0,0)">"</span><span style="font-weight:bold;color:rgb(175,95,135)">%s</span><span style="color:rgb(175,0,0)"> is not an estimator instance.</span><span style="color:rgb(175,0,0)">"</span> <span style="color:rgb(98,98,98)">%</span> (estimator))
+
+<span class="ansi-green-fg">-&gt; 1621</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> _is_fitted(estimator, attributes, all_or_any):
+
+<span class="ansi-green-fg ansi-bold">   1622</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> NotFittedError(msg <span style="color:rgb(98,98,98)">%</span> {<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">name</span><span style="color:rgb(175,0,0)">"</span>: <span style="color:rgb(0,135,0)">type</span>(estimator)<span style="color:rgb(98,98,98)">.</span><span style="color:rgb(0,0,135)">__name__</span>})
+
+
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/sklearn/utils/validation.py:1540</span>, in <span class="ansi-cyan-fg">_is_fitted</span><span class="ansi-blue-fg">(estimator, attributes, all_or_any)</span>
+
+<span class="ansi-green-fg ansi-bold">   1537</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> all_or_any([<span style="color:rgb(0,135,0)">hasattr</span>(estimator, attr) <span style="font-weight:bold;color:rgb(0,135,0)">for</span> attr <span style="font-weight:bold;color:rgb(175,0,255)">in</span> attributes])
+
+<span class="ansi-green-fg ansi-bold">   1539</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">hasattr</span>(estimator, <span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">__sklearn_is_fitted__</span><span style="color:rgb(175,0,0)">"</span>):
+
+<span class="ansi-green-fg">-&gt; 1540</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> estimator<span style="color:rgb(98,98,98)">.</span>__sklearn_is_fitted__()
+
+<span class="ansi-green-fg ansi-bold">   1542</span> fitted_attrs <span style="color:rgb(98,98,98)">=</span> [
+
+<span class="ansi-green-fg ansi-bold">   1543</span>     v <span style="font-weight:bold;color:rgb(0,135,0)">for</span> v <span style="font-weight:bold;color:rgb(175,0,255)">in</span> <span style="color:rgb(0,135,0)">vars</span>(estimator) <span style="font-weight:bold;color:rgb(0,135,0)">if</span> v<span style="color:rgb(98,98,98)">.</span>endswith(<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">_</span><span style="color:rgb(175,0,0)">"</span>) <span style="font-weight:bold;color:rgb(175,0,255)">and</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> v<span style="color:rgb(98,98,98)">.</span>startswith(<span style="color:rgb(175,0,0)">"</span><span style="color:rgb(175,0,0)">__</span><span style="color:rgb(175,0,0)">"</span>)
+
+<span class="ansi-green-fg ansi-bold">   1544</span> ]
+
+<span class="ansi-green-fg ansi-bold">   1545</span> <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)">len</span>(fitted_attrs) <span style="color:rgb(98,98,98)">&gt;</span> <span style="color:rgb(98,98,98)">0</span>
+
+
+
+File <span class="ansi-green-fg">/opt/anaconda3/lib/python3.12/site-packages/sklearn/pipeline.py:1089</span>, in <span class="ansi-cyan-fg">Pipeline.__sklearn_is_fitted__</span><span class="ansi-blue-fg">(self)</span>
+
+<span class="ansi-green-fg ansi-bold">   1083</span> <span style="font-style:italic;color:rgb(175,0,0)">"""Indicate whether pipeline has been fit."""</span>
+
+<span class="ansi-green-fg ansi-bold">   1084</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+
+<span class="ansi-green-fg ansi-bold">   1085</span>     <span style="font-style:italic;color:rgb(95,135,135)"># check if the last step of the pipeline is fitted</span>
+
+<span class="ansi-green-fg ansi-bold">   1086</span>     <span style="font-style:italic;color:rgb(95,135,135)"># we only check the last step since if the last step is fit, it</span>
+
+<span class="ansi-green-fg ansi-bold">   1087</span>     <span style="font-style:italic;color:rgb(95,135,135)"># means the previous steps should also be fit. This is faster than</span>
+
+<span class="ansi-green-fg ansi-bold">   1088</span>     <span style="font-style:italic;color:rgb(95,135,135)"># checking if every step of the pipeline is fit.</span>
+
+<span class="ansi-green-fg">-&gt; 1089</span>     check_is_fitted(<span style="color:rgb(0,135,0)">self</span><span style="color:rgb(98,98,98)">.</span>steps[<span style="color:rgb(98,98,98)">-</span><span style="color:rgb(98,98,98)">1</span>][<span style="color:rgb(98,98,98)">1</span>])
+
+<span class="ansi-green-fg ansi-bold">   1090</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="font-weight:bold;color:rgb(0,135,0)">True</span>
+
+<span class="ansi-green-fg ansi-bold">   1091</span> <span style="font-weight:bold;color:rgb(0,135,0)">except</span> NotFittedError:
+
+
+
+<span class="ansi-red-fg">TypeError</span>: 'LinearRegression' object is not subscriptable</pre>
+</div>
+</div>
+</div>
+<div id="cell-7" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"standardize"</span>, StandardScaler()),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>lr_pipeline</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<style>#sk-container-id-1 {
+  /* Definition of color scheme common for light and dark mode */
+  --sklearn-color-text: black;
+  --sklearn-color-line: gray;
+  /* Definition of color scheme for unfitted estimators */
+  --sklearn-color-unfitted-level-0: #fff5e6;
+  --sklearn-color-unfitted-level-1: #f6e4d2;
+  --sklearn-color-unfitted-level-2: #ffe0b3;
+  --sklearn-color-unfitted-level-3: chocolate;
+  /* Definition of color scheme for fitted estimators */
+  --sklearn-color-fitted-level-0: #f0f8ff;
+  --sklearn-color-fitted-level-1: #d4ebff;
+  --sklearn-color-fitted-level-2: #b3dbfd;
+  --sklearn-color-fitted-level-3: cornflowerblue;
+
+  /* Specific color for light theme */
+  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-icon: #696969;
+
+  @media (prefers-color-scheme: dark) {
+    /* Redefinition of color scheme for dark theme */
+    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-icon: #878787;
+  }
+}
+
+#sk-container-id-1 {
+  color: var(--sklearn-color-text);
+}
+
+#sk-container-id-1 pre {
+  padding: 0;
+}
+
+#sk-container-id-1 input.sk-hidden--visually {
+  border: 0;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#sk-container-id-1 div.sk-dashed-wrapped {
+  border: 1px dashed var(--sklearn-color-line);
+  margin: 0 0.4em 0.5em 0.4em;
+  box-sizing: border-box;
+  padding-bottom: 0.4em;
+  background-color: var(--sklearn-color-background);
+}
+
+#sk-container-id-1 div.sk-container {
+  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+     but bootstrap.min.css set `[hidden] { display: none !important; }`
+     so we also need the `!important` here to be able to override the
+     default hidden behavior on the sphinx rendered scikit-learn.org.
+     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+  display: inline-block !important;
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-text-repr-fallback {
+  display: none;
+}
+
+div.sk-parallel-item,
+div.sk-serial,
+div.sk-item {
+  /* draw centered vertical line to link estimators */
+  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* Parallel-specific style estimator block */
+
+#sk-container-id-1 div.sk-parallel-item::after {
+  content: "";
+  width: 100%;
+  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+  flex-grow: 1;
+}
+
+#sk-container-id-1 div.sk-parallel {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--sklearn-color-background);
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-parallel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
+  align-self: flex-end;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
+  align-self: flex-start;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
+  width: 0;
+}
+
+/* Serial-specific style estimator block */
+
+#sk-container-id-1 div.sk-serial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--sklearn-color-background);
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+
+/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+clickable and can be expanded/collapsed.
+- Pipeline and ColumnTransformer use this feature and define the default style
+- Estimators will overwrite some part of the style using the `sk-estimator` class
+*/
+
+/* Pipeline and ColumnTransformer style (default) */
+
+#sk-container-id-1 div.sk-toggleable {
+  /* Default theme specific background. It is overwritten whether we have a
+  specific estimator or a Pipeline/ColumnTransformer */
+  background-color: var(--sklearn-color-background);
+}
+
+/* Toggleable label */
+#sk-container-id-1 label.sk-toggleable__label {
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0.5em;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
+  /* Arrow on the left of the label */
+  content: "▸";
+  float: left;
+  margin-right: 0.25em;
+  color: var(--sklearn-color-icon);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
+  color: var(--sklearn-color-text);
+}
+
+/* Toggleable content - dropdown */
+
+#sk-container-id-1 div.sk-toggleable__content {
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  text-align: left;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content pre {
+  margin: 0.2em;
+  border-radius: 0.25em;
+  color: var(--sklearn-color-text);
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
+  /* unfitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+  /* Expand drop-down */
+  max-height: 200px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+  content: "▾";
+}
+
+/* Pipeline/ColumnTransformer-specific style */
+
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator-specific style */
+
+/* Colorize estimator box */
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
+  /* The background is the default theme color */
+  color: var(--sklearn-color-text-on-default-background);
+}
+
+/* On hover, darken the color of the background */
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+/* Label box, darken color on hover, fitted */
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator label */
+
+#sk-container-id-1 div.sk-label label {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 1.2em;
+}
+
+#sk-container-id-1 div.sk-label-container {
+  text-align: center;
+}
+
+/* Estimator-specific */
+#sk-container-id-1 div.sk-estimator {
+  font-family: monospace;
+  border: 1px dotted var(--sklearn-color-border-box);
+  border-radius: 0.25em;
+  box-sizing: border-box;
+  margin-bottom: 0.5em;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+/* on hover */
+#sk-container-id-1 div.sk-estimator:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Specification for estimator info (e.g. "i" and "?") */
+
+/* Common style for "i" and "?" */
+
+.sk-estimator-doc-link,
+a:link.sk-estimator-doc-link,
+a:visited.sk-estimator-doc-link {
+  float: right;
+  font-size: smaller;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1em;
+  height: 1em;
+  width: 1em;
+  text-decoration: none !important;
+  margin-left: 1ex;
+  /* unfitted */
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+  color: var(--sklearn-color-unfitted-level-1);
+}
+
+.sk-estimator-doc-link.fitted,
+a:link.sk-estimator-doc-link.fitted,
+a:visited.sk-estimator-doc-link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+div.sk-estimator:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover,
+div.sk-label-container:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover,
+div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+/* Span, style for the box shown on hovering the info icon */
+.sk-estimator-doc-link span {
+  display: none;
+  z-index: 9999;
+  position: relative;
+  font-weight: normal;
+  right: .2ex;
+  padding: .5ex;
+  margin: .5ex;
+  width: min-content;
+  min-width: 20ex;
+  max-width: 50ex;
+  color: var(--sklearn-color-text);
+  box-shadow: 2pt 2pt 4pt #999;
+  /* unfitted */
+  background: var(--sklearn-color-unfitted-level-0);
+  border: .5pt solid var(--sklearn-color-unfitted-level-3);
+}
+
+.sk-estimator-doc-link.fitted span {
+  /* fitted */
+  background: var(--sklearn-color-fitted-level-0);
+  border: var(--sklearn-color-fitted-level-3);
+}
+
+.sk-estimator-doc-link:hover span {
+  display: block;
+}
+
+/* "?"-specific style due to the `<a>` HTML tag */
+
+#sk-container-id-1 a.estimator_doc_link {
+  float: right;
+  font-size: 1rem;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1rem;
+  height: 1rem;
+  width: 1rem;
+  text-decoration: none;
+  /* unfitted */
+  color: var(--sklearn-color-unfitted-level-1);
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+#sk-container-id-1 a.estimator_doc_link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+}
+</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>Pipeline(steps=[('standardize', StandardScaler()),
+                ('linear_regression', LinearRegression())])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox"><label for="sk-estimator-id-1" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;&nbsp;Pipeline<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.pipeline.Pipeline.html">?<span>Documentation for Pipeline</span></a><span class="sk-estimator-doc-link ">i<span>Not fitted</span></span></label><div class="sk-toggleable__content "><pre>Pipeline(steps=[('standardize', StandardScaler()),
+                ('linear_regression', LinearRegression())])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox"><label for="sk-estimator-id-2" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;StandardScaler<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox"><label for="sk-estimator-id-3" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;LinearRegression<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a></label><div class="sk-toggleable__content "><pre>LinearRegression()</pre></div> </div></div></div></div></div></div>
+</div>
+</div>
+<div id="cell-8" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted <span class="op">=</span> lr_pipeline.fit(X_train, y_train)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>y_preds <span class="op">=</span> lr_pipeline_fitted.predict(X_test)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>r2_score(y_test, y_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.5133849776541741</code></pre>
+</div>
+</div>
+<div id="cell-9" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted.predict(new_house)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+
+Cell <span class="ansi-green-fg">In[8], line 1</span>
+
+<span class="ansi-green-fg">----&gt; 1</span> lr_pipeline_fitted<span style="color:rgb(98,98,98)">.</span>predict(new_house)
+
+
+
+<span class="ansi-red-fg">NameError</span>: name 'new_house' is not defined</pre>
+</div>
+</div>
+</div>
+<div id="cell-10" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> ColumnTransformer</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"standardize"</span>, StandardScaler(), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>lr_pipeline</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<style>#sk-container-id-4 {
+  /* Definition of color scheme common for light and dark mode */
+  --sklearn-color-text: black;
+  --sklearn-color-line: gray;
+  /* Definition of color scheme for unfitted estimators */
+  --sklearn-color-unfitted-level-0: #fff5e6;
+  --sklearn-color-unfitted-level-1: #f6e4d2;
+  --sklearn-color-unfitted-level-2: #ffe0b3;
+  --sklearn-color-unfitted-level-3: chocolate;
+  /* Definition of color scheme for fitted estimators */
+  --sklearn-color-fitted-level-0: #f0f8ff;
+  --sklearn-color-fitted-level-1: #d4ebff;
+  --sklearn-color-fitted-level-2: #b3dbfd;
+  --sklearn-color-fitted-level-3: cornflowerblue;
+
+  /* Specific color for light theme */
+  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-icon: #696969;
+
+  @media (prefers-color-scheme: dark) {
+    /* Redefinition of color scheme for dark theme */
+    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-icon: #878787;
+  }
+}
+
+#sk-container-id-4 {
+  color: var(--sklearn-color-text);
+}
+
+#sk-container-id-4 pre {
+  padding: 0;
+}
+
+#sk-container-id-4 input.sk-hidden--visually {
+  border: 0;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#sk-container-id-4 div.sk-dashed-wrapped {
+  border: 1px dashed var(--sklearn-color-line);
+  margin: 0 0.4em 0.5em 0.4em;
+  box-sizing: border-box;
+  padding-bottom: 0.4em;
+  background-color: var(--sklearn-color-background);
+}
+
+#sk-container-id-4 div.sk-container {
+  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+     but bootstrap.min.css set `[hidden] { display: none !important; }`
+     so we also need the `!important` here to be able to override the
+     default hidden behavior on the sphinx rendered scikit-learn.org.
+     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+  display: inline-block !important;
+  position: relative;
+}
+
+#sk-container-id-4 div.sk-text-repr-fallback {
+  display: none;
+}
+
+div.sk-parallel-item,
+div.sk-serial,
+div.sk-item {
+  /* draw centered vertical line to link estimators */
+  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* Parallel-specific style estimator block */
+
+#sk-container-id-4 div.sk-parallel-item::after {
+  content: "";
+  width: 100%;
+  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+  flex-grow: 1;
+}
+
+#sk-container-id-4 div.sk-parallel {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--sklearn-color-background);
+  position: relative;
+}
+
+#sk-container-id-4 div.sk-parallel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#sk-container-id-4 div.sk-parallel-item:first-child::after {
+  align-self: flex-end;
+  width: 50%;
+}
+
+#sk-container-id-4 div.sk-parallel-item:last-child::after {
+  align-self: flex-start;
+  width: 50%;
+}
+
+#sk-container-id-4 div.sk-parallel-item:only-child::after {
+  width: 0;
+}
+
+/* Serial-specific style estimator block */
+
+#sk-container-id-4 div.sk-serial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--sklearn-color-background);
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+
+/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+clickable and can be expanded/collapsed.
+- Pipeline and ColumnTransformer use this feature and define the default style
+- Estimators will overwrite some part of the style using the `sk-estimator` class
+*/
+
+/* Pipeline and ColumnTransformer style (default) */
+
+#sk-container-id-4 div.sk-toggleable {
+  /* Default theme specific background. It is overwritten whether we have a
+  specific estimator or a Pipeline/ColumnTransformer */
+  background-color: var(--sklearn-color-background);
+}
+
+/* Toggleable label */
+#sk-container-id-4 label.sk-toggleable__label {
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0.5em;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#sk-container-id-4 label.sk-toggleable__label-arrow:before {
+  /* Arrow on the left of the label */
+  content: "▸";
+  float: left;
+  margin-right: 0.25em;
+  color: var(--sklearn-color-icon);
+}
+
+#sk-container-id-4 label.sk-toggleable__label-arrow:hover:before {
+  color: var(--sklearn-color-text);
+}
+
+/* Toggleable content - dropdown */
+
+#sk-container-id-4 div.sk-toggleable__content {
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  text-align: left;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-4 div.sk-toggleable__content.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-4 div.sk-toggleable__content pre {
+  margin: 0.2em;
+  border-radius: 0.25em;
+  color: var(--sklearn-color-text);
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-4 div.sk-toggleable__content.fitted pre {
+  /* unfitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-4 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+  /* Expand drop-down */
+  max-height: 200px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+#sk-container-id-4 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+  content: "▾";
+}
+
+/* Pipeline/ColumnTransformer-specific style */
+
+#sk-container-id-4 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-4 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator-specific style */
+
+/* Colorize estimator box */
+#sk-container-id-4 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-4 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+#sk-container-id-4 div.sk-label label.sk-toggleable__label,
+#sk-container-id-4 div.sk-label label {
+  /* The background is the default theme color */
+  color: var(--sklearn-color-text-on-default-background);
+}
+
+/* On hover, darken the color of the background */
+#sk-container-id-4 div.sk-label:hover label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+/* Label box, darken color on hover, fitted */
+#sk-container-id-4 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator label */
+
+#sk-container-id-4 div.sk-label label {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 1.2em;
+}
+
+#sk-container-id-4 div.sk-label-container {
+  text-align: center;
+}
+
+/* Estimator-specific */
+#sk-container-id-4 div.sk-estimator {
+  font-family: monospace;
+  border: 1px dotted var(--sklearn-color-border-box);
+  border-radius: 0.25em;
+  box-sizing: border-box;
+  margin-bottom: 0.5em;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-4 div.sk-estimator.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+/* on hover */
+#sk-container-id-4 div.sk-estimator:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-4 div.sk-estimator.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Specification for estimator info (e.g. "i" and "?") */
+
+/* Common style for "i" and "?" */
+
+.sk-estimator-doc-link,
+a:link.sk-estimator-doc-link,
+a:visited.sk-estimator-doc-link {
+  float: right;
+  font-size: smaller;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1em;
+  height: 1em;
+  width: 1em;
+  text-decoration: none !important;
+  margin-left: 1ex;
+  /* unfitted */
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+  color: var(--sklearn-color-unfitted-level-1);
+}
+
+.sk-estimator-doc-link.fitted,
+a:link.sk-estimator-doc-link.fitted,
+a:visited.sk-estimator-doc-link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+div.sk-estimator:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover,
+div.sk-label-container:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover,
+div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+/* Span, style for the box shown on hovering the info icon */
+.sk-estimator-doc-link span {
+  display: none;
+  z-index: 9999;
+  position: relative;
+  font-weight: normal;
+  right: .2ex;
+  padding: .5ex;
+  margin: .5ex;
+  width: min-content;
+  min-width: 20ex;
+  max-width: 50ex;
+  color: var(--sklearn-color-text);
+  box-shadow: 2pt 2pt 4pt #999;
+  /* unfitted */
+  background: var(--sklearn-color-unfitted-level-0);
+  border: .5pt solid var(--sklearn-color-unfitted-level-3);
+}
+
+.sk-estimator-doc-link.fitted span {
+  /* fitted */
+  background: var(--sklearn-color-fitted-level-0);
+  border: var(--sklearn-color-fitted-level-3);
+}
+
+.sk-estimator-doc-link:hover span {
+  display: block;
+}
+
+/* "?"-specific style due to the `<a>` HTML tag */
+
+#sk-container-id-4 a.estimator_doc_link {
+  float: right;
+  font-size: 1rem;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1rem;
+  height: 1rem;
+  width: 1rem;
+  text-decoration: none;
+  /* unfitted */
+  color: var(--sklearn-color-unfitted-level-1);
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+}
+
+#sk-container-id-4 a.estimator_doc_link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+#sk-container-id-4 a.estimator_doc_link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+#sk-container-id-4 a.estimator_doc_link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+}
+</style><div id="sk-container-id-4" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>Pipeline(steps=[('preprocessing',
+                 ColumnTransformer(transformers=[('dummify',
+                                                  OneHotEncoder(sparse_output=False),
+                                                  ['Bldg Type']),
+                                                 ('standardize',
+                                                  StandardScaler(),
+                                                  ['Gr Liv Area',
+                                                   'TotRms AbvGrd'])])),
+                ('linear_regression', LinearRegression())])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-20" type="checkbox"><label for="sk-estimator-id-20" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;&nbsp;Pipeline<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.pipeline.Pipeline.html">?<span>Documentation for Pipeline</span></a><span class="sk-estimator-doc-link ">i<span>Not fitted</span></span></label><div class="sk-toggleable__content "><pre>Pipeline(steps=[('preprocessing',
+                 ColumnTransformer(transformers=[('dummify',
+                                                  OneHotEncoder(sparse_output=False),
+                                                  ['Bldg Type']),
+                                                 ('standardize',
+                                                  StandardScaler(),
+                                                  ['Gr Liv Area',
+                                                   'TotRms AbvGrd'])])),
+                ('linear_regression', LinearRegression())])</pre></div> </div></div><div class="sk-serial"><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-21" type="checkbox"><label for="sk-estimator-id-21" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;preprocessing: ColumnTransformer<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.compose.ColumnTransformer.html">?<span>Documentation for preprocessing: ColumnTransformer</span></a></label><div class="sk-toggleable__content "><pre>ColumnTransformer(transformers=[('dummify', OneHotEncoder(sparse_output=False),
+                                 ['Bldg Type']),
+                                ('standardize', StandardScaler(),
+                                 ['Gr Liv Area', 'TotRms AbvGrd'])])</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-22" type="checkbox"><label for="sk-estimator-id-22" class="sk-toggleable__label  sk-toggleable__label-arrow ">dummify</label><div class="sk-toggleable__content "><pre>['Bldg Type']</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-23" type="checkbox"><label for="sk-estimator-id-23" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;OneHotEncoder<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.preprocessing.OneHotEncoder.html">?<span>Documentation for OneHotEncoder</span></a></label><div class="sk-toggleable__content "><pre>OneHotEncoder(sparse_output=False)</pre></div> </div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-24" type="checkbox"><label for="sk-estimator-id-24" class="sk-toggleable__label  sk-toggleable__label-arrow ">standardize</label><div class="sk-toggleable__content "><pre>['Gr Liv Area', 'TotRms AbvGrd']</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-25" type="checkbox"><label for="sk-estimator-id-25" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;StandardScaler<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-26" type="checkbox"><label for="sk-estimator-id-26" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;LinearRegression<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.linear_model.LinearRegression.html">?<span>Documentation for LinearRegression</span></a></label><div class="sk-toggleable__content "><pre>LinearRegression()</pre></div> </div></div></div></div></div></div>
+</div>
+</div>
+<div id="cell-11" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames.drop(<span class="st">"SalePrice"</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr_pipeline.fit(X_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-12" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>ct_fitted <span class="op">=</span> ct.fit(X_train)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>ct.transform(X_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[ 0.        ,  0.        ,  0.        , ...,  1.        , -0.08398618,  0.360294  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        , -0.40352834, -0.2801315 ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  0.19361608,  0.360294  ],
+       ...,
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  2.14881472,  2.2815705 ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        , -0.00609777,  0.360294  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  0.43926412,  0.360294  ]])</code></pre>
+</div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ct.transform(X_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([[ 1.        ,  0.        ,  0.        , ...,  0.        , -0.6032422 , -0.920557  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  0.51315825,  0.360294  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        , -0.11194612,  0.360294  ],
+       ...,
+       [ 1.        ,  0.        ,  0.        , ...,  0.        , -0.43947684, -0.920557  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  1.52770463,  1.641145  ],
+       [ 1.        ,  0.        ,  0.        , ...,  0.        ,  0.95452587,  0.360294  ]])</code></pre>
+</div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted.named_steps[<span class="st">'linear_regression'</span>].coef_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([ 74131.6639841 , -19730.31227195])</code></pre>
+</div>
+</div>
+<div id="cell-15" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>).set_output(transform<span class="op">=</span><span class="st">"pandas"</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>ct.fit_transform(X_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_1Fam</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_2fmCon</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Duplex</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Twnhs</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_TwnhsE</th>
+<th data-quarto-table-cell-role="th">standardize__Gr Liv Area</th>
+<th data-quarto-table-cell-role="th">standardize__TotRms AbvGrd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1047</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>-0.083986</td>
+<td>0.360294</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1975</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-0.403528</td>
+<td>-0.280131</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2601</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.193616</td>
+<td>0.360294</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1133</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.329422</td>
+<td>1.000719</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1845</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.149679</td>
+<td>-1.560982</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1569</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.381347</td>
+<td>-0.280131</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2564</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-1.122498</td>
+<td>-0.920557</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2103</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2.148815</td>
+<td>2.281570</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1731</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-0.006098</td>
+<td>0.360294</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">819</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.439264</td>
+<td>0.360294</td>
+</tr>
+</tbody>
+</table>
+
+<p>2197 rows × 7 columns</p>
+</div>
+</div>
+</div>
+<div id="cell-16" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>ct_inter <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>ct_inter.fit_transform(X_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">interaction__1</th>
+<th data-quarto-table-cell-role="th">interaction__Gr Liv Area</th>
+<th data-quarto-table-cell-role="th">interaction__TotRms AbvGrd</th>
+<th data-quarto-table-cell-role="th">interaction__Gr Liv Area TotRms AbvGrd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1047</td>
+<td>1.0</td>
+<td>1456.0</td>
+<td>7.0</td>
+<td>10192.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1975</td>
+<td>1.0</td>
+<td>1296.0</td>
+<td>6.0</td>
+<td>7776.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2601</td>
+<td>1.0</td>
+<td>1595.0</td>
+<td>7.0</td>
+<td>11165.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1133</td>
+<td>1.0</td>
+<td>1663.0</td>
+<td>8.0</td>
+<td>13304.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1845</td>
+<td>1.0</td>
+<td>1573.0</td>
+<td>4.0</td>
+<td>6292.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1569</td>
+<td>1.0</td>
+<td>1689.0</td>
+<td>6.0</td>
+<td>10134.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2564</td>
+<td>1.0</td>
+<td>936.0</td>
+<td>5.0</td>
+<td>4680.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2103</td>
+<td>1.0</td>
+<td>2574.0</td>
+<td>10.0</td>
+<td>25740.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1731</td>
+<td>1.0</td>
+<td>1495.0</td>
+<td>7.0</td>
+<td>10465.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">819</td>
+<td>1.0</td>
+<td>1718.0</td>
+<td>7.0</td>
+<td>12026.0</td>
+</tr>
+</tbody>
+</table>
+
+<p>2197 rows × 4 columns</p>
+</div>
+</div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ct_dummies <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>])],</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>ct_inter <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__TotRms AbvGrd"</span>, <span class="st">"dummify__Bldg Type_1Fam"</span>]),</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>X_train_dummified <span class="op">=</span> ct_dummies.fit_transform(X_train)</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>X_train_dummified</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_1Fam</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_2fmCon</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Duplex</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Twnhs</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_TwnhsE</th>
+<th data-quarto-table-cell-role="th">remainder__Order</th>
+<th data-quarto-table-cell-role="th">remainder__PID</th>
+<th data-quarto-table-cell-role="th">remainder__MS SubClass</th>
+<th data-quarto-table-cell-role="th">remainder__MS Zoning</th>
+<th data-quarto-table-cell-role="th">remainder__Lot Frontage</th>
+<th data-quarto-table-cell-role="th">remainder__Lot Area</th>
+<th data-quarto-table-cell-role="th">remainder__Street</th>
+<th data-quarto-table-cell-role="th">remainder__Alley</th>
+<th data-quarto-table-cell-role="th">remainder__Lot Shape</th>
+<th data-quarto-table-cell-role="th">remainder__Land Contour</th>
+<th data-quarto-table-cell-role="th">remainder__Utilities</th>
+<th data-quarto-table-cell-role="th">remainder__Lot Config</th>
+<th data-quarto-table-cell-role="th">remainder__Land Slope</th>
+<th data-quarto-table-cell-role="th">remainder__Neighborhood</th>
+<th data-quarto-table-cell-role="th">remainder__Condition 1</th>
+<th data-quarto-table-cell-role="th">remainder__Condition 2</th>
+<th data-quarto-table-cell-role="th">remainder__House Style</th>
+<th data-quarto-table-cell-role="th">remainder__Overall Qual</th>
+<th data-quarto-table-cell-role="th">remainder__Overall Cond</th>
+<th data-quarto-table-cell-role="th">remainder__Year Built</th>
+<th data-quarto-table-cell-role="th">remainder__Year Remod/Add</th>
+<th data-quarto-table-cell-role="th">remainder__Roof Style</th>
+<th data-quarto-table-cell-role="th">remainder__Roof Matl</th>
+<th data-quarto-table-cell-role="th">remainder__Exterior 1st</th>
+<th data-quarto-table-cell-role="th">remainder__Exterior 2nd</th>
+<th data-quarto-table-cell-role="th">remainder__Mas Vnr Type</th>
+<th data-quarto-table-cell-role="th">remainder__Mas Vnr Area</th>
+<th data-quarto-table-cell-role="th">remainder__Exter Qual</th>
+<th data-quarto-table-cell-role="th">remainder__Exter Cond</th>
+<th data-quarto-table-cell-role="th">remainder__Foundation</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Qual</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Cond</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Exposure</th>
+<th data-quarto-table-cell-role="th">remainder__BsmtFin Type 1</th>
+<th data-quarto-table-cell-role="th">remainder__BsmtFin SF 1</th>
+<th data-quarto-table-cell-role="th">remainder__BsmtFin Type 2</th>
+<th data-quarto-table-cell-role="th">remainder__BsmtFin SF 2</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Unf SF</th>
+<th data-quarto-table-cell-role="th">remainder__Total Bsmt SF</th>
+<th data-quarto-table-cell-role="th">remainder__Heating</th>
+<th data-quarto-table-cell-role="th">remainder__Heating QC</th>
+<th data-quarto-table-cell-role="th">remainder__Central Air</th>
+<th data-quarto-table-cell-role="th">remainder__Electrical</th>
+<th data-quarto-table-cell-role="th">remainder__1st Flr SF</th>
+<th data-quarto-table-cell-role="th">remainder__2nd Flr SF</th>
+<th data-quarto-table-cell-role="th">remainder__Low Qual Fin SF</th>
+<th data-quarto-table-cell-role="th">remainder__Gr Liv Area</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Full Bath</th>
+<th data-quarto-table-cell-role="th">remainder__Bsmt Half Bath</th>
+<th data-quarto-table-cell-role="th">remainder__Full Bath</th>
+<th data-quarto-table-cell-role="th">remainder__Half Bath</th>
+<th data-quarto-table-cell-role="th">remainder__Bedroom AbvGr</th>
+<th data-quarto-table-cell-role="th">remainder__Kitchen AbvGr</th>
+<th data-quarto-table-cell-role="th">remainder__Kitchen Qual</th>
+<th data-quarto-table-cell-role="th">remainder__TotRms AbvGrd</th>
+<th data-quarto-table-cell-role="th">remainder__Functional</th>
+<th data-quarto-table-cell-role="th">remainder__Fireplaces</th>
+<th data-quarto-table-cell-role="th">remainder__Fireplace Qu</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Type</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Yr Blt</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Finish</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Cars</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Area</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Qual</th>
+<th data-quarto-table-cell-role="th">remainder__Garage Cond</th>
+<th data-quarto-table-cell-role="th">remainder__Paved Drive</th>
+<th data-quarto-table-cell-role="th">remainder__Wood Deck SF</th>
+<th data-quarto-table-cell-role="th">remainder__Open Porch SF</th>
+<th data-quarto-table-cell-role="th">remainder__Enclosed Porch</th>
+<th data-quarto-table-cell-role="th">remainder__3Ssn Porch</th>
+<th data-quarto-table-cell-role="th">remainder__Screen Porch</th>
+<th data-quarto-table-cell-role="th">remainder__Pool Area</th>
+<th data-quarto-table-cell-role="th">remainder__Pool QC</th>
+<th data-quarto-table-cell-role="th">remainder__Fence</th>
+<th data-quarto-table-cell-role="th">remainder__Misc Feature</th>
+<th data-quarto-table-cell-role="th">remainder__Misc Val</th>
+<th data-quarto-table-cell-role="th">remainder__Mo Sold</th>
+<th data-quarto-table-cell-role="th">remainder__Yr Sold</th>
+<th data-quarto-table-cell-role="th">remainder__Sale Type</th>
+<th data-quarto-table-cell-role="th">remainder__Sale Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1047</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>1048</td>
+<td>527453160</td>
+<td>160</td>
+<td>RL</td>
+<td>24.0</td>
+<td>2308</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>FR2</td>
+<td>Gtl</td>
+<td>NPkVill</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>6</td>
+<td>6</td>
+<td>1975</td>
+<td>1975</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>Plywood</td>
+<td>Brk Cmn</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>CBlock</td>
+<td>Gd</td>
+<td>TA</td>
+<td>No</td>
+<td>ALQ</td>
+<td>286.0</td>
+<td>LwQ</td>
+<td>294.0</td>
+<td>275.0</td>
+<td>855.0</td>
+<td>GasA</td>
+<td>Gd</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>855</td>
+<td>601</td>
+<td>0</td>
+<td>1456</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>TA</td>
+<td>7</td>
+<td>Typ</td>
+<td>0</td>
+<td>NaN</td>
+<td>Attchd</td>
+<td>1975.0</td>
+<td>RFn</td>
+<td>2.0</td>
+<td>460.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>5</td>
+<td>2008</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1975</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1976</td>
+<td>902106070</td>
+<td>50</td>
+<td>RM</td>
+<td>50.0</td>
+<td>6000</td>
+<td>Pave</td>
+<td>Grvl</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>OldTown</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>1.5Fin</td>
+<td>6</td>
+<td>6</td>
+<td>1927</td>
+<td>1950</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>MetalSd</td>
+<td>MetalSd</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>BrkTil</td>
+<td>TA</td>
+<td>TA</td>
+<td>No</td>
+<td>Rec</td>
+<td>276.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>569.0</td>
+<td>845.0</td>
+<td>GasA</td>
+<td>TA</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>866</td>
+<td>430</td>
+<td>0</td>
+<td>1296</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1</td>
+<td>0</td>
+<td>3</td>
+<td>1</td>
+<td>TA</td>
+<td>6</td>
+<td>Typ</td>
+<td>0</td>
+<td>NaN</td>
+<td>Detchd</td>
+<td>1980.0</td>
+<td>Unf</td>
+<td>2.0</td>
+<td>576.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>0</td>
+<td>0</td>
+<td>175</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>7</td>
+<td>2007</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2601</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2602</td>
+<td>535380010</td>
+<td>70</td>
+<td>RL</td>
+<td>60.0</td>
+<td>7200</td>
+<td>Pave</td>
+<td>Grvl</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>OldTown</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>6</td>
+<td>8</td>
+<td>1915</td>
+<td>1950</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>MetalSd</td>
+<td>MetalSd</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>TA</td>
+<td>Ex</td>
+<td>CBlock</td>
+<td>TA</td>
+<td>TA</td>
+<td>No</td>
+<td>Rec</td>
+<td>338.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>325.0</td>
+<td>663.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>774</td>
+<td>821</td>
+<td>0</td>
+<td>1595</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>0</td>
+<td>3</td>
+<td>1</td>
+<td>TA</td>
+<td>7</td>
+<td>Typ</td>
+<td>1</td>
+<td>Gd</td>
+<td>Detchd</td>
+<td>1974.0</td>
+<td>Unf</td>
+<td>2.0</td>
+<td>528.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>49</td>
+<td>0</td>
+<td>231</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>4</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1133</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1134</td>
+<td>531373060</td>
+<td>60</td>
+<td>RL</td>
+<td>67.0</td>
+<td>12774</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>FR2</td>
+<td>Gtl</td>
+<td>SawyerW</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>7</td>
+<td>5</td>
+<td>2003</td>
+<td>2004</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>VinylSd</td>
+<td>VinylSd</td>
+<td>BrkFace</td>
+<td>95.0</td>
+<td>Gd</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Gd</td>
+<td>TA</td>
+<td>Av</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>835.0</td>
+<td>835.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>835</td>
+<td>828</td>
+<td>0</td>
+<td>1663</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>Gd</td>
+<td>8</td>
+<td>Typ</td>
+<td>0</td>
+<td>NaN</td>
+<td>Attchd</td>
+<td>2003.0</td>
+<td>RFn</td>
+<td>2.0</td>
+<td>478.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>168</td>
+<td>68</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>7</td>
+<td>2008</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1845</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>1846</td>
+<td>533221060</td>
+<td>160</td>
+<td>FV</td>
+<td>24.0</td>
+<td>2117</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>Somerst</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>6</td>
+<td>5</td>
+<td>2000</td>
+<td>2000</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>MetalSd</td>
+<td>MetalSd</td>
+<td>BrkFace</td>
+<td>216.0</td>
+<td>Gd</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Gd</td>
+<td>TA</td>
+<td>No</td>
+<td>GLQ</td>
+<td>417.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>339.0</td>
+<td>756.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>769</td>
+<td>804</td>
+<td>0</td>
+<td>1573</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>Gd</td>
+<td>4</td>
+<td>Typ</td>
+<td>0</td>
+<td>NaN</td>
+<td>Detchd</td>
+<td>2000.0</td>
+<td>Unf</td>
+<td>2.0</td>
+<td>440.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>0</td>
+<td>32</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>9</td>
+<td>2007</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1569</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1570</td>
+<td>914476450</td>
+<td>20</td>
+<td>RL</td>
+<td>74.0</td>
+<td>9990</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>Mitchel</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>1Story</td>
+<td>4</td>
+<td>5</td>
+<td>1991</td>
+<td>1991</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>HdBoard</td>
+<td>HdBoard</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Gd</td>
+<td>TA</td>
+<td>No</td>
+<td>ALQ</td>
+<td>1383.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>297.0</td>
+<td>1680.0</td>
+<td>GasA</td>
+<td>Gd</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>1689</td>
+<td>0</td>
+<td>0</td>
+<td>1689</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>0</td>
+<td>3</td>
+<td>1</td>
+<td>TA</td>
+<td>6</td>
+<td>Typ</td>
+<td>1</td>
+<td>TA</td>
+<td>Attchd</td>
+<td>1991.0</td>
+<td>Unf</td>
+<td>2.0</td>
+<td>432.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>428</td>
+<td>120</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>7</td>
+<td>2008</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2564</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2565</td>
+<td>534479300</td>
+<td>20</td>
+<td>RL</td>
+<td>82.0</td>
+<td>9888</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>NAmes</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>1Story</td>
+<td>5</td>
+<td>6</td>
+<td>1954</td>
+<td>1975</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>MetalSd</td>
+<td>MetalSd</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>TA</td>
+<td>Gd</td>
+<td>CBlock</td>
+<td>TA</td>
+<td>TA</td>
+<td>No</td>
+<td>BLQ</td>
+<td>486.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>450.0</td>
+<td>936.0</td>
+<td>GasA</td>
+<td>TA</td>
+<td>Y</td>
+<td>FuseA</td>
+<td>936</td>
+<td>0</td>
+<td>0</td>
+<td>936</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>1</td>
+<td>TA</td>
+<td>5</td>
+<td>Typ</td>
+<td>0</td>
+<td>NaN</td>
+<td>Attchd</td>
+<td>1954.0</td>
+<td>Unf</td>
+<td>1.0</td>
+<td>240.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>0</td>
+<td>0</td>
+<td>160</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>MnPrv</td>
+<td>NaN</td>
+<td>0</td>
+<td>3</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2103</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2104</td>
+<td>906380070</td>
+<td>60</td>
+<td>RL</td>
+<td>69.0</td>
+<td>9588</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>CollgCr</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>8</td>
+<td>5</td>
+<td>2007</td>
+<td>2007</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>CemntBd</td>
+<td>CmentBd</td>
+<td>Stone</td>
+<td>270.0</td>
+<td>Gd</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Ex</td>
+<td>TA</td>
+<td>No</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>1482.0</td>
+<td>1482.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>1482</td>
+<td>1092</td>
+<td>0</td>
+<td>2574</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>Ex</td>
+<td>10</td>
+<td>Typ</td>
+<td>1</td>
+<td>Gd</td>
+<td>BuiltIn</td>
+<td>2007.0</td>
+<td>Fin</td>
+<td>3.0</td>
+<td>868.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>0</td>
+<td>148</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>11</td>
+<td>2007</td>
+<td>New</td>
+<td>Partial</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1731</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1732</td>
+<td>528221030</td>
+<td>60</td>
+<td>RL</td>
+<td>62.0</td>
+<td>8857</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>Gilbert</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>2Story</td>
+<td>6</td>
+<td>5</td>
+<td>2006</td>
+<td>2006</td>
+<td>Gable</td>
+<td>CompShg</td>
+<td>VinylSd</td>
+<td>VinylSd</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>Gd</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Gd</td>
+<td>TA</td>
+<td>No</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>738.0</td>
+<td>738.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>738</td>
+<td>757</td>
+<td>0</td>
+<td>1495</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>Gd</td>
+<td>7</td>
+<td>Typ</td>
+<td>1</td>
+<td>Gd</td>
+<td>Attchd</td>
+<td>2006.0</td>
+<td>RFn</td>
+<td>2.0</td>
+<td>440.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>100</td>
+<td>30</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>3</td>
+<td>2007</td>
+<td>New</td>
+<td>Partial</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">819</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>820</td>
+<td>906340110</td>
+<td>20</td>
+<td>RL</td>
+<td>79.0</td>
+<td>10637</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>Gtl</td>
+<td>CollgCr</td>
+<td>Norm</td>
+<td>Norm</td>
+<td>1Story</td>
+<td>8</td>
+<td>5</td>
+<td>2007</td>
+<td>2008</td>
+<td>Hip</td>
+<td>CompShg</td>
+<td>VinylSd</td>
+<td>VinylSd</td>
+<td>Stone</td>
+<td>336.0</td>
+<td>Gd</td>
+<td>TA</td>
+<td>PConc</td>
+<td>Ex</td>
+<td>TA</td>
+<td>Gd</td>
+<td>GLQ</td>
+<td>1288.0</td>
+<td>Unf</td>
+<td>0.0</td>
+<td>417.0</td>
+<td>1705.0</td>
+<td>GasA</td>
+<td>Ex</td>
+<td>Y</td>
+<td>SBrkr</td>
+<td>1718</td>
+<td>0</td>
+<td>0</td>
+<td>1718</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>2</td>
+<td>0</td>
+<td>3</td>
+<td>1</td>
+<td>Gd</td>
+<td>7</td>
+<td>Typ</td>
+<td>1</td>
+<td>Gd</td>
+<td>Attchd</td>
+<td>2007.0</td>
+<td>RFn</td>
+<td>3.0</td>
+<td>826.0</td>
+<td>TA</td>
+<td>TA</td>
+<td>Y</td>
+<td>208</td>
+<td>44</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>9</td>
+<td>2009</td>
+<td>WD</td>
+<td>Normal</td>
+</tr>
+</tbody>
+</table>
+
+<p>2197 rows × 85 columns</p>
+</div>
+</div>
+</div>
+<div id="cell-18" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ct_inter.fit_transform(X_train_dummified)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="practice-activity" class="level2">
+<h2 class="anchored" data-anchor-id="practice-activity">Practice Activity</h2>
+<div id="cell-21" class="cell" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using only the size and number of rooms.</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames[[<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>]]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co">lr_pipeline</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">X_train, X_test, y_train, y_test = train_test_split(X, y)</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co">lr_pipeline_fitted = lr_pipeline.fit(X_train,y_train)</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="co">y_pred = lr_pipeline_fitted.predict(X_test)</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="co">mean_squared_error(y_test, y_pred)</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> cross_val_score(lr_pipeline, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">abs</span>(scores.mean()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>55806.32634926364
+55806.32634926364</code></pre>
+</div>
+</div>
+<div id="cell-22" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using size, number of rooms, and building type.</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames[[<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>, <span class="st">"Bldg Type"</span>]]</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"standardize"</span>, StandardScaler(), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>lr_pipeline2 <span class="op">=</span> Pipeline(</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a><span class="co">lr_pipeline</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a><span class="co">X_train, X_test, y_train, y_test = train_test_split(X, y)</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a><span class="co">lr_pipeline_fitted = lr_pipeline.fit(X_train,y_train)</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a><span class="co">y_pred = lr_pipeline_fitted.predict(X_test)</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a><span class="co">mean_squared_error(y_test, y_pred)</span></span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a><span class="co">'''</span></span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> cross_val_score(lr_pipeline2, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">abs</span>(scores.mean()))</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>54157.69684642386
+54157.69684642386</code></pre>
+</div>
+</div>
+<div id="cell-23" class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using size and building type, and their interaction</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames[[<span class="st">"Gr Liv Area"</span>, <span class="st">"Bldg Type"</span>]]</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>ct_dummies <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"standardize"</span>, StandardScaler(), [<span class="st">"Gr Liv Area"</span>])], </span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>ct_inter <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction1"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_1Fam"</span>]), </span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction2"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_2fmCon"</span>]),</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction3"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_Duplex"</span>]),</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction4"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_Twnhs"</span>]),</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction5"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_TwnhsE"</span>])</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>lr_pipeline3 <span class="op">=</span> Pipeline(</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct_dummies),</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"interaction"</span>, ct_inter),</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> cross_val_score(lr_pipeline3, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">abs</span>(scores.mean()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>53438.949680003476
+53438.949680003476</code></pre>
+</div>
+</div>
+<div id="cell-24" class="cell" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using a 5-degree polynomial on size, a 5-degree polynomial on number of rooms, and also building type</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames[[<span class="st">"Gr Liv Area"</span>, <span class="st">"Bldg Type"</span>, <span class="st">"TotRms AbvGrd"</span>]]</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>ct_dummies <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"standardize"</span>, StandardScaler(), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])], </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>ct_poly <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"poly1"</span>, PolynomialFeatures(degree <span class="op">=</span> <span class="dv">5</span>, interaction_only <span class="op">=</span> <span class="va">False</span>), [<span class="st">"standardize__Gr Liv Area"</span>]), </span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"poly2"</span>, PolynomialFeatures(degree <span class="op">=</span> <span class="dv">5</span>, interaction_only <span class="op">=</span> <span class="va">False</span>), [<span class="st">"standardize__TotRms AbvGrd"</span>])</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>lr_pipeline4 <span class="op">=</span> Pipeline(</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct_dummies),</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_poly),</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> cross_val_score(lr_pipeline4, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">abs</span>(scores.mean()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_1Fam</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_2fmCon</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Duplex</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_Twnhs</th>
+<th data-quarto-table-cell-role="th">dummify__Bldg Type_TwnhsE</th>
+<th data-quarto-table-cell-role="th">standardize__Gr Liv Area</th>
+<th data-quarto-table-cell-role="th">standardize__TotRms AbvGrd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.309265</td>
+<td>0.354167</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-1.194427</td>
+<td>-0.917535</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-0.337718</td>
+<td>-0.281684</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.207523</td>
+<td>0.990018</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.255844</td>
+<td>-0.281684</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2925</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-0.982723</td>
+<td>-0.281684</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2926</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-1.182556</td>
+<td>-0.917535</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2927</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-1.048015</td>
+<td>-0.281684</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2928</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>-0.219006</td>
+<td>-0.281684</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2929</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.989884</td>
+<td>1.625868</td>
+</tr>
+</tbody>
+</table>
+
+<p>2930 rows × 7 columns</p>
+</div>
+</div>
+</div>
+</section>
+<section id="cross-validating" class="level1">
+<h1>Cross-Validating</h1>
+<div id="cell-26" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames.drop(<span class="st">"SalePrice"</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"standardize"</span>, StandardScaler(), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>lr_pipeline_1 <span class="op">=</span> Pipeline(</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>).set_output(transform<span class="op">=</span><span class="st">"pandas"</span>)</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> cross_val_score(lr_pipeline_1, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'r2'</span>)</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>scores</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([0.53184948, 0.53247419, 0.42905063, 0.56571819, 0.60646645])</code></pre>
+</div>
+</div>
+<div id="cell-27" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>scores.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0.5331117885298249</code></pre>
+</div>
+</div>
+<p>Cross validated r-squared is 0.53311</p>
+<section id="tuning" class="level2">
+<h2 class="anchored" data-anchor-id="tuning">Tuning</h2>
+<div id="cell-30" class="cell" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GridSearchCV</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames.drop(<span class="st">"SalePrice"</span>, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>ct_poly <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"polynomial"</span>, PolynomialFeatures(), [<span class="st">"Gr Liv Area"</span>])</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>lr_pipeline_poly <span class="op">=</span> Pipeline(</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct_poly),</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>).set_output(transform<span class="op">=</span><span class="st">"pandas"</span>)</span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>degrees <span class="op">=</span> {<span class="st">'preprocessing__polynomial__degree'</span>: np.arange(<span class="dv">1</span>, <span class="dv">10</span>)}</span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>gscv <span class="op">=</span> GridSearchCV(lr_pipeline_poly, degrees, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'r2'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-31" class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>gscv_fitted <span class="op">=</span> gscv.fit(X, y)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>gscv_fitted.cv_results_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'mean_fit_time': array([0.0181973 , 0.00647779, 0.00664363, 0.00617161, 0.00677176, 0.00663314, 0.00713277, 0.00907593, 0.00948658]),
+ 'std_fit_time': array([0.02222038, 0.00024375, 0.00055608, 0.0003836 , 0.00085845, 0.00064053, 0.00031275, 0.00092292, 0.00162739]),
+ 'mean_score_time': array([0.00318451, 0.00285535, 0.00309782, 0.00260458, 0.00277758, 0.00285945, 0.0036468 , 0.00341077, 0.0037292 ]),
+ 'std_score_time': array([0.00046284, 0.00019072, 0.00040013, 0.00036717, 0.00023289, 0.0006738 , 0.00049429, 0.00031668, 0.00064042]),
+ 'param_preprocessing__polynomial__degree': masked_array(data=[1, 2, 3, 4, 5, 6, 7, 8, 9],
+              mask=[False, False, False, False, False, False, False, False, False],
+        fill_value='?',
+             dtype=object),
+ 'params': [{'preprocessing__polynomial__degree': 1},
+  {'preprocessing__polynomial__degree': 2},
+  {'preprocessing__polynomial__degree': 3},
+  {'preprocessing__polynomial__degree': 4},
+  {'preprocessing__polynomial__degree': 5},
+  {'preprocessing__polynomial__degree': 6},
+  {'preprocessing__polynomial__degree': 7},
+  {'preprocessing__polynomial__degree': 8},
+  {'preprocessing__polynomial__degree': 9}],
+ 'split0_test_score': array([0.53667199, 0.53861812, 0.55155397, 0.55000299, 0.50847886, 0.50803388, 0.50404864, 0.48824759, 0.45353318]),
+ 'split1_test_score': array([0.52379929, 0.51739889, 0.52489524, 0.52536327, 0.45451042, 0.45231332, 0.44389116, 0.42226201, 0.38464169]),
+ 'split2_test_score': array([  0.43205901,   0.44999102,   0.50538581,   0.45008921,   0.1733882 ,  -0.39418512,  -1.67096399,  -4.78706736, -12.6045523 ]),
+ 'split3_test_score': array([  0.56266573,   0.57574172,   0.58653708,   0.59197747,   0.54742275,   0.53273129,   0.31370342,  -1.49591606, -11.46561678]),
+ 'split4_test_score': array([0.59424739, 0.57528078, 0.58780969, 0.59316272, 0.57550038, 0.5702938 , 0.55592936, 0.53199328, 0.50402512]),
+ 'mean_test_score': array([ 0.52988868,  0.5314061 ,  0.55123636,  0.54211913,  0.45186012,  0.33383744,  0.02932172, -0.96809611, -4.54559382]),
+ 'std_test_score': array([0.05453461, 0.04640531, 0.03280237, 0.05273277, 0.14503685, 0.36602408, 0.85397816, 2.05754398, 6.12585788]),
+ 'rank_test_score': array([4, 3, 1, 2, 5, 6, 7, 8, 9], dtype=int32)}</code></pre>
+</div>
+</div>
+<div id="cell-32" class="cell" data-execution_count="61">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>gscv_fitted.cv_results_[<span class="st">'mean_test_score'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([ 0.52988868,  0.5314061 ,  0.55123636,  0.54211913,  0.45186012,  0.33383744,  0.02932172, -0.96809611, -4.54559382])</code></pre>
+</div>
+</div>
+<div id="cell-33" class="cell" data-execution_count="48">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: np.arange(<span class="dv">1</span>, <span class="dv">10</span>), <span class="st">"scores"</span>: gscv_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">degrees</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>0.529889</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2</td>
+<td>0.531406</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3</td>
+<td>0.551236</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4</td>
+<td>0.542119</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5</td>
+<td>0.451860</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>6</td>
+<td>0.333837</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>7</td>
+<td>0.029322</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>8</td>
+<td>-0.968096</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>9</td>
+<td>-4.545594</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="cell-34" class="cell" data-execution_count="62">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Consider one hundred modeling options for house price: </span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - House size, trying degrees 1 through 10</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Number of rooms, trying degrees 1 through 10</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co"># - Building Type</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames.drop(<span class="st">"SalePrice"</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">"SalePrice"</span>]</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the ColumnTransformer with PolynomialFeatures and OneHotEncoder</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>ct_poly <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    transformers<span class="op">=</span>[</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output<span class="op">=</span><span class="va">False</span>), [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"polynomial1"</span>, PolynomialFeatures(), [<span class="st">"Gr Liv Area"</span>]),</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"polynomial2"</span>, PolynomialFeatures(), [<span class="st">"TotRms AbvGrd"</span>])</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    remainder<span class="op">=</span><span class="st">"drop"</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>lr_pipeline_poly <span class="op">=</span> Pipeline([</span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"preprocessing"</span>, ct_poly),</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"linear_regression"</span>, LinearRegression())</span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>]).set_output(transform<span class="op">=</span><span class="st">"pandas"</span>)</span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {</span>
+<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">'preprocessing__polynomial1__degree'</span>: np.arange(<span class="dv">1</span>, <span class="dv">11</span>),</span>
+<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">'preprocessing__polynomial2__degree'</span>: np.arange(<span class="dv">1</span>, <span class="dv">11</span>)</span>
+<span id="cb43-27"><a href="#cb43-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb43-28"><a href="#cb43-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-29"><a href="#cb43-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up GridSearchCV with the updated param_grid</span></span>
+<span id="cb43-30"><a href="#cb43-30" aria-hidden="true" tabindex="-1"></a>gscv <span class="op">=</span> GridSearchCV(lr_pipeline_poly, param_grid, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'r2'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-35" class="cell" data-execution_count="63">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>gscv_fitted <span class="op">=</span> gscv.fit(X, y)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>gscv_fitted.cv_results_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'mean_fit_time': array([0.025454  , 0.0081111 , 0.00843806, 0.0104322 , 0.01234322, 0.01428928, 0.01217146, 0.01329436, 0.01119847, 0.01201596,
+        0.00985732, 0.00925722, 0.01382113, 0.00657701, 0.00685558, 0.00714073, 0.01017509, 0.01075554, 0.01055045, 0.01352739,
+        0.0107163 , 0.0108532 , 0.01729674, 0.01152139, 0.01378217, 0.0145493 , 0.0177803 , 0.01933298, 0.01541824, 0.01796985,
+        0.01496048, 0.02737789, 0.01187668, 0.01210346, 0.0107646 , 0.01787548, 0.0180162 , 0.01707478, 0.01482129, 0.01258245,
+        0.01475182, 0.00786643, 0.00984845, 0.01260972, 0.01939993, 0.01041942, 0.01188965, 0.01214442, 0.02639928, 0.0177062 ,
+        0.01225581, 0.01303296, 0.0147121 , 0.01392355, 0.01311941, 0.01372161, 0.01580043, 0.02002234, 0.01785045, 0.01886821,
+        0.014884  , 0.0146946 , 0.01729712, 0.01250381, 0.01377864, 0.01152515, 0.01379294, 0.01407342, 0.0146708 , 0.01621885,
+        0.0127306 , 0.01382585, 0.01714764, 0.0270556 , 0.01308594, 0.01240258, 0.01190252, 0.01339369, 0.03833041, 0.02250781,
+        0.01823964, 0.01296997, 0.01161089, 0.01075335, 0.01444926, 0.03082471, 0.0166996 , 0.01476212, 0.01356263, 0.01638374,
+        0.013234  , 0.01393242, 0.01280856, 0.01667433, 0.01811047, 0.01282196, 0.01112189, 0.01408834, 0.0130651 , 0.01353493]),
+ 'std_fit_time': array([0.0338933 , 0.00077402, 0.00101141, 0.00060568, 0.00110388, 0.00189214, 0.00172295, 0.00252247, 0.00184491, 0.00118795,
+        0.00208901, 0.00233881, 0.00665167, 0.00013261, 0.00014623, 0.00047972, 0.00370389, 0.00381281, 0.00205214, 0.00261164,
+        0.00259447, 0.00236859, 0.01545498, 0.00129069, 0.00087623, 0.00231232, 0.0056459 , 0.01180806, 0.00477507, 0.00270614,
+        0.00080775, 0.01638139, 0.00080091, 0.00215383, 0.00173115, 0.00493604, 0.00535274, 0.00338253, 0.00366762, 0.00315383,
+        0.00525369, 0.00070322, 0.00275205, 0.0055492 , 0.0107726 , 0.00332465, 0.00281885, 0.00306151, 0.02252021, 0.00467431,
+        0.00426601, 0.00377103, 0.00304367, 0.00460178, 0.0031656 , 0.00159541, 0.00253227, 0.00238216, 0.00472205, 0.00308917,
+        0.00225095, 0.00175934, 0.00204946, 0.00176484, 0.0042372 , 0.00232769, 0.00262639, 0.00102379, 0.00289298, 0.00162394,
+        0.00312676, 0.00226536, 0.00466734, 0.0224349 , 0.00215065, 0.00126065, 0.00175707, 0.00418821, 0.02025957, 0.00421152,
+        0.00809537, 0.0009072 , 0.00112421, 0.00245578, 0.00277076, 0.0294034 , 0.00228167, 0.0022369 , 0.00201731, 0.00396476,
+        0.00250368, 0.00309565, 0.00215396, 0.00365861, 0.00296563, 0.00242568, 0.00230417, 0.00325892, 0.00258577, 0.00277668]),
+ 'mean_score_time': array([0.00368519, 0.00402522, 0.00411115, 0.00397048, 0.00542636, 0.00743117, 0.00563741, 0.00505013, 0.00998664, 0.0066124 ,
+        0.00497098, 0.00481768, 0.00637403, 0.00315461, 0.00296078, 0.00335078, 0.00508118, 0.00449247, 0.00379477, 0.00423713,
+        0.00455976, 0.00444384, 0.00558305, 0.00580263, 0.00674043, 0.00607328, 0.01286101, 0.01018844, 0.014326  , 0.00839791,
+        0.00714402, 0.01233296, 0.00573745, 0.00589538, 0.00650167, 0.03187351, 0.00972037, 0.01023984, 0.00829692, 0.00523467,
+        0.00516863, 0.00641184, 0.00520778, 0.0065752 , 0.00616932, 0.00416102, 0.00639677, 0.00745454, 0.01513519, 0.00755558,
+        0.00576982, 0.00573373, 0.00785527, 0.005828  , 0.0060864 , 0.0078351 , 0.00682449, 0.0080421 , 0.00842867, 0.00878181,
+        0.00633759, 0.00613217, 0.0084898 , 0.00813541, 0.00478454, 0.00514665, 0.00614858, 0.00586786, 0.00687556, 0.00690413,
+        0.00830736, 0.00858898, 0.01008177, 0.00840597, 0.00635905, 0.00946603, 0.00506353, 0.00812197, 0.01670551, 0.01074495,
+        0.00913777, 0.00589881, 0.00554528, 0.00585179, 0.00835633, 0.00916452, 0.00776439, 0.00752387, 0.00775819, 0.00854554,
+        0.00676517, 0.0070118 , 0.00842967, 0.0086657 , 0.00751495, 0.00568962, 0.00602283, 0.00656805, 0.00391822, 0.00715733]),
+ 'std_score_time': array([5.58590123e-04, 6.39705954e-04, 7.45818873e-04, 4.90848273e-04, 1.28441653e-03, 1.73769478e-03, 1.27177716e-03, 1.39779896e-03,
+        6.41133954e-03, 2.78867142e-03, 2.05828526e-03, 1.90850937e-03, 5.76402299e-03, 1.96598671e-04, 4.02972823e-05, 4.33147216e-04,
+        1.74299720e-03, 1.43984852e-03, 2.35583211e-04, 4.03646313e-04, 1.19999533e-03, 1.44206491e-03, 1.98314419e-03, 8.75577383e-04,
+        1.18906885e-03, 1.36785524e-03, 8.76052496e-03, 4.89204424e-03, 7.51048159e-03, 2.35691091e-03, 2.46480005e-03, 6.79275491e-03,
+        7.33269410e-04, 9.47500967e-04, 2.24939131e-03, 2.67520900e-02, 3.48036499e-03, 5.14458759e-03, 5.49984704e-03, 1.13519654e-03,
+        2.27028557e-03, 3.08139413e-03, 1.99751321e-03, 6.43652700e-03, 1.23343330e-03, 7.97299015e-04, 1.97260132e-03, 3.28287896e-03,
+        9.89672022e-03, 1.62540285e-03, 1.36800502e-03, 1.48902161e-03, 3.91798623e-03, 1.33407268e-03, 1.56123996e-03, 2.08291896e-03,
+        1.51183698e-03, 2.02655185e-03, 2.43157107e-03, 1.28422680e-03, 1.79829709e-03, 1.41111561e-03, 2.83870329e-03, 2.53983131e-03,
+        6.14319906e-04, 1.57878699e-03, 1.34116703e-03, 1.25726977e-03, 1.52667327e-03, 1.45473528e-03, 7.31970224e-03, 3.31755836e-03,
+        1.11836729e-03, 4.69143737e-03, 1.70554100e-03, 3.87821958e-03, 1.45549404e-03, 3.88715836e-03, 7.75669495e-03, 1.53713643e-03,
+        3.23153071e-03, 1.43135274e-03, 1.81020198e-03, 2.73423669e-03, 2.44952779e-03, 3.07776209e-03, 1.73173329e-03, 2.18554344e-03,
+        7.85469557e-04, 2.06460178e-03, 1.34413521e-03, 3.39978632e-03, 3.71908133e-03, 2.08083601e-03, 1.14094494e-03, 1.17303661e-03,
+        2.08981047e-03, 2.50741632e-03, 2.80720900e-04, 1.88939032e-03]),
+ 'param_preprocessing__polynomial1__degree': masked_array(data=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                    4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8,
+                    8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+              mask=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False],
+        fill_value='?',
+             dtype=object),
+ 'param_preprocessing__polynomial2__degree': masked_array(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
+                    9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6,
+                    7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+              mask=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
+                    False, False, False, False],
+        fill_value='?',
+             dtype=object),
+ 'params': [{'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 1,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 2,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 3,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 4,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 5,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 6,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 7,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 8,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 9,
+   'preprocessing__polynomial2__degree': 10},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 1},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 2},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 3},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 4},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 5},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 6},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 7},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 8},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 9},
+  {'preprocessing__polynomial1__degree': 10,
+   'preprocessing__polynomial2__degree': 10}],
+ 'split0_test_score': array([0.53197809, 0.52048972, 0.5242219 , 0.53184271, 0.5319609 , 0.53190067, 0.53133617, 0.53065114, 0.53099301, 0.53012521,
+        0.53171602, 0.52917544, 0.53081818, 0.53758574, 0.53735141, 0.53745662, 0.53727551, 0.53658738, 0.536678  , 0.53588315,
+        0.54522355, 0.53566999, 0.53590891, 0.53945895, 0.53930072, 0.53938499, 0.54040972, 0.54022423, 0.54059691, 0.5399751 ,
+        0.54379565, 0.53571259, 0.5362294 , 0.53883862, 0.53887791, 0.53869032, 0.53917886, 0.53965147, 0.53952784, 0.54002034,
+        0.50847886, 0.50847886, 0.50158162, 0.50037316, 0.50052242, 0.50565347, 0.50525067, 0.50604541, 0.50739353, 0.50734457,
+        0.50803388, 0.50803388, 0.50803388, 0.50803388, 0.50803388, 0.50164211, 0.50358824, 0.4977158 , 0.49827708, 0.50007613,
+        0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50404864, 0.50375315,
+        0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759, 0.48824759,
+        0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353318, 0.45353355,
+        0.40231935, 0.40231935, 0.40231935, 0.40231935, 0.40231935, 0.40231935, 0.40231935, 0.40231935, 0.40231918, 0.40231918]),
+ 'split1_test_score': array([0.53225302, 0.53730671, 0.5354238 , 0.53544608, 0.53500045, 0.53504   , 0.53405576, 0.53534435, 0.53255867, 0.51743415,
+        0.52618888, 0.51997812, 0.52445722, 0.52151401, 0.52031442, 0.5213231 , 0.52000604, 0.52030135, 0.52045329, 0.50853845,
+        0.53488419, 0.53893103, 0.53895206, 0.53586828, 0.53451754, 0.53534431, 0.5331316 , 0.53172174, 0.53188811, 0.52381461,
+        0.53516783, 0.53781855, 0.53749177, 0.53487707, 0.53353129, 0.53373064, 0.53400577, 0.53048616, 0.53027031, 0.53062884,
+        0.45451042, 0.45451042, 0.49887582, 0.4983378 , 0.49889726, 0.49114728, 0.48943155, 0.49175656, 0.49245972, 0.49127565,
+        0.45231332, 0.45231332, 0.45231332, 0.45231332, 0.45231332, 0.49100047, 0.48652811, 0.49273121, 0.4899853 , 0.48670151,
+        0.44389116, 0.44389116, 0.44389116, 0.44389116, 0.44389116, 0.44389116, 0.44389116, 0.44389116, 0.44389113, 0.47003606,
+        0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201, 0.42226201,
+        0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169, 0.38464169,
+        0.33730999, 0.33730999, 0.33730999, 0.33730999, 0.33730999, 0.33730999, 0.33730999, 0.33730999, 0.33731018, 0.33731018]),
+ 'split2_test_score': array([ 4.28295335e-01,  4.34384984e-01,  4.37847834e-01,  4.22601291e-01,  4.19178646e-01,  4.19085877e-01,  4.19064840e-01,
+         4.19415300e-01,  4.21259340e-01,  4.21475224e-01,  4.56095393e-01,  4.51860030e-01,  4.43445488e-01,  4.18640590e-01,
+         4.09008772e-01,  4.09765911e-01,  4.09793877e-01,  4.09770612e-01,  4.11189150e-01,  4.11558859e-01,  5.12144051e-01,
+         5.12220963e-01,  5.04808139e-01,  4.72190028e-01,  4.63061320e-01,  4.66764739e-01,  4.72075883e-01,  4.69446754e-01,
+         4.70211810e-01,  4.70247122e-01,  4.61596230e-01,  4.70621944e-01,  4.78667699e-01,  4.99580538e-01,  4.99862050e-01,
+         4.99052854e-01,  4.85925311e-01,  4.79923869e-01,  4.82802626e-01,  4.86811347e-01,  1.73388201e-01,  1.73388200e-01,
+         3.49256420e-01,  3.25875236e-01,  3.18007628e-01,  4.36673847e-01,  4.54114081e-01,  1.90109695e-01, -5.35651830e-02,
+        -1.43811899e-01, -3.94185115e-01, -3.94185115e-01, -3.94185115e-01, -3.94185115e-01, -3.94185098e-01,  2.77488562e-01,
+         3.12566528e-01, -3.76863379e-01, -5.21516642e-01, -1.64240307e-01, -1.67096399e+00, -1.67096399e+00, -1.67096399e+00,
+        -1.67096399e+00, -1.67096399e+00, -1.67096399e+00, -1.67096399e+00, -1.67096389e+00, -3.13753366e-03, -3.58627508e-02,
+        -4.78706736e+00, -4.78706730e+00, -4.78706730e+00, -4.78706730e+00, -4.78706730e+00, -4.78706730e+00, -4.78706730e+00,
+        -4.78706730e+00, -4.78706730e+00, -4.78706731e+00, -1.26045513e+01, -1.26045513e+01, -1.26045513e+01, -1.26045513e+01,
+        -1.26045513e+01, -1.26045513e+01, -1.26045513e+01, -1.26045513e+01, -1.26045513e+01, -1.26045604e+01, -3.20376683e+01,
+        -3.20376683e+01, -3.20376683e+01, -3.20376683e+01, -3.20376683e+01, -3.20376683e+01, -3.20376683e+01, -3.20376683e+01,
+        -3.20376514e+01, -3.20376514e+01]),
+ 'split3_test_score': array([ 5.65747933e-01,  5.71443248e-01,  5.88074536e-01,  6.15356800e-01,  6.16704667e-01,  5.85729787e-01, -1.68548642e+00,
+        -7.53704629e+00, -7.35541490e-01, -9.23176290e+02,  5.82384226e-01,  5.75605343e-01,  5.83533300e-01,  6.03073637e-01,
+         5.89473109e-01,  6.02705181e-01, -2.99315879e-01, -2.94565108e+00,  3.93171850e-01, -9.49419000e+02,  5.92700784e-01,
+         5.95944662e-01,  5.90476921e-01,  6.00342961e-01,  5.92295885e-01,  5.80443227e-01,  9.10996430e-02,  2.35021598e-03,
+        -7.37209345e+00, -1.98181880e+03,  5.98211999e-01,  6.00604937e-01,  5.94607946e-01,  6.03074113e-01,  6.02401904e-01,
+         5.86263815e-01,  6.02921498e-01, -7.66536116e-01, -1.96054718e+00, -2.72789891e+00,  5.47422750e-01,  5.47422750e-01,
+         5.78123862e-01,  5.65100471e-01,  5.50867548e-01,  5.75908441e-01,  5.38009476e-01,  3.89333496e-01,  5.47489842e-01,
+         7.90393532e-02,  5.32731294e-01,  5.32731294e-01,  5.32731294e-01,  5.32731294e-01,  5.32731294e-01,  5.80254956e-01,
+         5.77098810e-01,  3.65119026e-01,  2.46906460e-01, -1.14297191e+00,  3.13703418e-01,  3.13703418e-01,  3.13703418e-01,
+         3.13703418e-01,  3.13703418e-01,  3.13703418e-01,  3.13703418e-01,  3.13703405e-01,  3.13703471e-01,  4.99619841e-01,
+        -1.49591606e+00, -1.49591595e+00, -1.49591595e+00, -1.49591595e+00, -1.49591595e+00, -1.49591595e+00, -1.49591595e+00,
+        -1.49591595e+00, -1.49591595e+00, -1.49591595e+00, -1.14656224e+01, -1.14656224e+01, -1.14656224e+01, -1.14656224e+01,
+        -1.14656224e+01, -1.14656224e+01, -1.14656224e+01, -1.14656224e+01, -1.14656224e+01, -1.14657339e+01, -5.01071068e+01,
+        -5.01071068e+01, -5.01071068e+01, -5.01071068e+01, -5.01071068e+01, -5.01071068e+01, -5.01071068e+01, -5.01071068e+01,
+        -5.01068956e+01, -5.01068956e+01]),
+ 'split4_test_score': array([0.60613781, 0.59828957, 0.59405278, 0.60239686, 0.60248625, 0.60255496, 0.60137637, 0.60019991, 0.60150623, 0.60120898,
+        0.59097517, 0.59121783, 0.58841648, 0.59627402, 0.59518882, 0.59531701, 0.59473349, 0.59380085, 0.59488935, 0.59481444,
+        0.60325039, 0.60151955, 0.60004926, 0.6041018 , 0.60357003, 0.60391651, 0.60528089, 0.60476946, 0.60575142, 0.6048011 ,
+        0.60835332, 0.60609193, 0.60520428, 0.60793042, 0.60767191, 0.60742242, 0.60843503, 0.60850058, 0.60843174, 0.60892435,
+        0.57550038, 0.57550038, 0.59830952, 0.59332897, 0.595177  , 0.60274672, 0.60245949, 0.60202347, 0.60374367, 0.60362811,
+        0.5702938 , 0.5702938 , 0.5702938 , 0.5702938 , 0.5702938 , 0.58205813, 0.57970194, 0.58127184, 0.57843237, 0.59049255,
+        0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.55592936, 0.56298264,
+        0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328, 0.53199328,
+        0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402512, 0.50402514,
+        0.46569119, 0.46569119, 0.46569119, 0.46569119, 0.46569119, 0.46569119, 0.46569119, 0.46569119, 0.46569206, 0.46569206]),
+ 'mean_test_score': array([ 5.32882439e-01,  5.32382847e-01,  5.35924169e-01,  5.41528749e-01,  5.41066183e-01,  5.34862257e-01,  8.00693446e-02,
+        -1.09028712e+00,  2.70155151e-01, -1.84221209e+02,  5.37471938e-01,  5.33567353e-01,  5.34134134e-01,  5.35417599e-01,
+         5.30267305e-01,  5.33313563e-01,  3.52498608e-01, -1.77038177e-01,  4.91276328e-01, -1.89473641e+02,  5.57640592e-01,
+         5.56857238e-01,  5.54039055e-01,  5.50392405e-01,  5.46549098e-01,  5.45170756e-01,  4.48399545e-01,  4.29702480e-01,
+        -1.04472904e+00, -3.95935992e+02,  5.49425004e-01,  5.50169989e-01,  5.50440217e-01,  5.56860152e-01,  5.56469011e-01,
+         5.53032010e-01,  5.54093295e-01,  2.78405193e-01,  4.00970687e-02, -1.12302808e-01,  4.51860122e-01,  4.51860121e-01,
+         5.05229447e-01,  4.96603128e-01,  4.92694372e-01,  5.22425951e-01,  5.17853052e-01,  4.35853727e-01,  4.19504316e-01,
+         3.07495156e-01,  3.33837437e-01,  3.33837437e-01,  3.33837437e-01,  3.33837437e-01,  3.33837440e-01,  4.86488846e-01,
+         4.91896725e-01,  3.11994900e-01,  2.58416913e-01,  5.40115945e-02,  2.93217204e-02,  2.93217204e-02,  2.93217204e-02,
+         2.93217204e-02,  2.93217204e-02,  2.93217204e-02,  2.93217203e-02,  2.93217363e-02,  3.62887011e-01,  4.00105788e-01,
+        -9.68096108e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01,
+        -9.68096074e-01, -9.68096074e-01, -9.68096076e-01, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00,
+        -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54561878e+00, -1.61878909e+01,
+        -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01,
+        -1.61878451e+01, -1.61878451e+01]),
+ 'std_test_score': array([5.89680705e-02, 5.59261703e-02, 5.63112009e-02, 6.84544620e-02, 6.99569522e-02, 6.41603923e-02, 8.84715945e-01, 3.22390354e+00,
+        5.06150914e-01, 3.69477545e+02, 4.82955255e-02, 4.89301804e-02, 5.23754136e-02, 6.65067276e-02, 6.71907829e-02, 6.94040085e-02,
+        3.31368030e-01, 1.38559003e+00, 7.70541503e-02, 3.79972684e+02, 3.47892014e-02, 3.54547430e-02, 3.58459471e-02, 4.86330335e-02,
+        5.00233186e-02, 4.68460200e-02, 1.83565213e-01, 2.17936229e-01, 3.16397383e+00, 7.92941405e+02, 5.25386860e-02, 4.97200431e-02,
+        4.57619818e-02, 4.20306755e-02, 4.18843673e-02, 3.88706740e-02, 4.60652587e-02, 5.24074329e-01, 1.00112645e+00, 1.30838343e+00,
+        1.45036854e-01, 1.45036855e-01, 8.75885327e-02, 9.29655964e-02, 9.43419526e-02, 5.98746972e-02, 5.01872264e-02, 1.40156087e-01,
+        2.39652328e-01, 2.88887485e-01, 3.66024084e-01, 3.66024084e-01, 3.66024084e-01, 3.66024084e-01, 3.66024077e-01, 1.11226496e-01,
+        9.72563457e-02, 3.51287871e-01, 4.05461601e-01, 6.56415927e-01, 8.53978163e-01, 8.53978163e-01, 8.53978163e-01, 8.53978163e-01,
+        8.53978163e-01, 8.53978163e-01, 8.53978164e-01, 8.53978125e-01, 2.00073290e-01, 2.20060674e-01, 2.05754398e+00, 2.05754395e+00,
+        2.05754395e+00, 2.05754395e+00, 2.05754395e+00, 2.05754395e+00, 2.05754395e+00, 2.05754395e+00, 2.05754395e+00, 2.05754395e+00,
+        6.12585890e+00, 6.12585890e+00, 6.12585890e+00, 6.12585890e+00, 6.12585890e+00, 6.12585890e+00, 6.12585890e+00, 6.12585890e+00,
+        6.12585890e+00, 6.12588653e+00, 2.11063393e+01, 2.11063393e+01, 2.11063393e+01, 2.11063393e+01, 2.11063393e+01, 2.11063393e+01,
+        2.11063393e+01, 2.11063393e+01, 2.11062690e+01, 2.11062690e+01]),
+ 'rank_test_score': array([ 23,  24,  17,  14,  15,  19,  53,  77,  51,  98,  16,  21,  20,  18,  25,  22,  42,  65,  32,  99,   1,   3,   6,   9,  12,  13,
+         36,  38,  76, 100,  11,  10,   8,   2,   4,   7,   5,  50,  55,  64,  34,  35,  28,  29,  30,  26,  27,  37,  39,  49,  46,  47,
+         45,  44,  43,  33,  31,  48,  52,  54,  58,  61,  60,  62,  59,  57,  63,  56,  41,  40,  75,  66,  66,  66,  70,  69,  71,  72,
+         73,  74,  78,  80,  80,  80,  80,  80,  80,  86,  79,  87,  97,  90,  90,  90,  90,  90,  90,  90,  88,  88], dtype=int32)}</code></pre>
+</div>
+</div>
+<div id="cell-36" class="cell" data-execution_count="64">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>gscv_fitted.cv_results_[<span class="st">'mean_test_score'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([ 5.32882439e-01,  5.32382847e-01,  5.35924169e-01,  5.41528749e-01,  5.41066183e-01,  5.34862257e-01,  8.00693446e-02,
+       -1.09028712e+00,  2.70155151e-01, -1.84221209e+02,  5.37471938e-01,  5.33567353e-01,  5.34134134e-01,  5.35417599e-01,
+        5.30267305e-01,  5.33313563e-01,  3.52498608e-01, -1.77038177e-01,  4.91276328e-01, -1.89473641e+02,  5.57640592e-01,
+        5.56857238e-01,  5.54039055e-01,  5.50392405e-01,  5.46549098e-01,  5.45170756e-01,  4.48399545e-01,  4.29702480e-01,
+       -1.04472904e+00, -3.95935992e+02,  5.49425004e-01,  5.50169989e-01,  5.50440217e-01,  5.56860152e-01,  5.56469011e-01,
+        5.53032010e-01,  5.54093295e-01,  2.78405193e-01,  4.00970687e-02, -1.12302808e-01,  4.51860122e-01,  4.51860121e-01,
+        5.05229447e-01,  4.96603128e-01,  4.92694372e-01,  5.22425951e-01,  5.17853052e-01,  4.35853727e-01,  4.19504316e-01,
+        3.07495156e-01,  3.33837437e-01,  3.33837437e-01,  3.33837437e-01,  3.33837437e-01,  3.33837440e-01,  4.86488846e-01,
+        4.91896725e-01,  3.11994900e-01,  2.58416913e-01,  5.40115945e-02,  2.93217204e-02,  2.93217204e-02,  2.93217204e-02,
+        2.93217204e-02,  2.93217204e-02,  2.93217204e-02,  2.93217203e-02,  2.93217363e-02,  3.62887011e-01,  4.00105788e-01,
+       -9.68096108e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01, -9.68096074e-01,
+       -9.68096074e-01, -9.68096074e-01, -9.68096076e-01, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00,
+       -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54559475e+00, -4.54561878e+00, -1.61878909e+01,
+       -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01, -1.61878909e+01,
+       -1.61878451e+01, -1.61878451e+01])</code></pre>
+</div>
+</div>
+<div id="cell-37" class="cell" data-execution_count="70">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>degrees <span class="op">=</span> pd.DataFrame(gscv_fitted.cv_results_[<span class="st">"params"</span>])</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> degrees.assign(scores<span class="op">=</span>gscv_fitted.cv_results_[<span class="st">'mean_test_score'</span>])</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>results.sort_values(by<span class="op">=</span><span class="st">'scores'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">preprocessing__polynomial1__degree</th>
+<th data-quarto-table-cell-role="th">preprocessing__polynomial2__degree</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20</td>
+<td>3</td>
+<td>1</td>
+<td>0.557641</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">33</td>
+<td>4</td>
+<td>4</td>
+<td>0.556860</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">21</td>
+<td>3</td>
+<td>2</td>
+<td>0.556857</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">34</td>
+<td>4</td>
+<td>5</td>
+<td>0.556469</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">36</td>
+<td>4</td>
+<td>7</td>
+<td>0.554093</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">91</td>
+<td>10</td>
+<td>2</td>
+<td>-16.187891</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">90</td>
+<td>10</td>
+<td>1</td>
+<td>-16.187891</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">9</td>
+<td>1</td>
+<td>10</td>
+<td>-184.221209</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">19</td>
+<td>2</td>
+<td>10</td>
+<td>-189.473641</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">29</td>
+<td>3</td>
+<td>10</td>
+<td>-395.935992</td>
+</tr>
+</tbody>
+</table>
+
+<p>100 rows × 3 columns</p>
+</div>
+</div>
+</div>
+<p>GrLivArea with degree = 3 and TotRmsAbvGrd with degree = 1 has the highest R-squared</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
